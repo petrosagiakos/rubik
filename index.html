@@ -8,20 +8,34 @@
 </head>
 <body>
     <a-scene>
+        <a-sky color="#408D91"></a-sky>
         <a-entity id="cube9"></a-entity>
     </a-scene>
     <script>
-        const c=3;
+        //cube constants
+        const posX = [-1, 0, 1];
+        const posY = [1, 2, 3];
+        const posZ = [-2, -3, -4];
+        const cubeSize=0.9;
+
+        //adding rubik cube in scene
+   
         const cube9=document.getElementById("cube9");
-        for(let x=0;i<c;x++){
-            for(let y=0;y<c;y++){
-                for(let z=0;z<c;z++){
+        for(let x of posX){
+            for(let y of posY){
+                for(let z of posZ){
                     let cube=document.createElement("a-entity");
-                    cube.setAttribute("gltf-model","#cube-model");
+                    cube.setAttribute("geometry","primitive: box");
                     cube.setAttribute("position",`${x} ${y} ${z}`);
+                    cube.setAttribute("scale",`${cubeSize} ${cubeSize}} ${cubeSize}`);
+                    
+                    cube.setAttribute("color","#5B67A4");
                     cube9.appendChild(cube);
                 }
             }
+        }
+        function rotate(direction){
+            
         }
     </script>
 </body>
