@@ -1,42 +1,198 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-</head>
-<body>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Rubik's Cube Slice Rotation - Single Cubelet Version</title>
+    <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+    <style>
+      #rubiks-menu {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        z-index: 10;
+        background: rgba(255,255,255,0.85);
+        padding: 12px;
+        border-radius:8px;
+        font-family: sans-serif;
+      }
+      #rubiks-menu button { margin: 2px 4px; padding: 6px 12px; border-radius: 5px; border: none; background: #6a95ff; color: white; font-weight: bold; cursor: pointer;}
+      #rubiks-menu button:hover { background: #4562b5;}
+    </style>
+  </head>
+  <body>
+    <div id="rubiks-menu">
+      <b>Rotate Slice (grouped, centered):</b><br>
+      <button onclick="rotateSlice('UL')"><</button>U (Top, y=3)<button onclick="rotateSlice('U')">></button>
+      <button onclick="rotateSlice('MYL')"><</button> (Middle, y=2)<button onclick="rotateSlice('MY')">></button>
+      <button onclick="rotateSlice('DL')"><</button> (Bottom, y=1)<button onclick="rotateSlice('D')">></button>
+      <button onclick="rotateSlice('LL')"><</button> (Left, x=-1)<button onclick="rotateSlice('L')">></button>
+      <button onclick="rotateSlice('MXL')"><</button> (Middle, x=0)<button onclick="rotateSlice('MX')">></button>
+      <button onclick="rotateSlice('RL')"><</button> (Right, x=1)<button onclick="rotateSlice('R')">></button>
+      <button onclick="rotateSlice('FL')"><</button> (Front, z=-2)<button onclick="rotateSlice('F')">></button>
+      <button onclick="rotateSlice('MZL')"><</button> (Middle, z=-3)<button onclick="rotateSlice('MZ')">></button>
+      <button onclick="rotateSlice('BL')"><</button> (Back, z=-4)<button onclick="rotateSlice('B')">></button>
+    </div>
     <a-scene>
-        <a-sky color="#408D91"></a-sky>
-        <a-entity id="cube9"></a-entity>
+      <a-assets>
+        <a-asset-item id="cube-model" src="./assets/rcube.glb"></a-asset-item>
+        <img id="skyTexture" src="https://kostasgian21.github.io/computer_graphics/360-degree_Panorama_of_the_Southern_Sky.jpg" crossorigin="anonymous"/>
+      </a-assets>
+      <a-sky src="#skyTexture"></a-sky>
+      <a-entity light="type: directional; intensity:6.2; color:#fff" position="1 4 2"></a-entity>
+      <a-entity light="type: directional; intensity:6.2; color:#fff" position="-1 -4 -2"></a-entity>
+      <a-entity light="type: ambient; intensity:2.35; color:#fff"></a-entity>
+      <a-entity light="type: point; intensity:3.6; distance:10" position="-3 2 0"></a-entity>
+      <a-entity light="type: point; intensity:3.6; distance:10" position="0 1 -5"></a-entity>
+      <a-entity id="cube-cluster"></a-entity>
+      
     </a-scene>
-    <script>
-        //cube constants
-        const posX = [-1, 0, 1];
-        const posY = [1, 2, 3];
-        const posZ = [-2, -3, -4];
-        const cubeSize=0.9;
 
-        //adding rubik cube in scene
-   
-        const cube9=document.getElementById("cube9");
-        for(let x of posX){
-            for(let y of posY){
-                for(let z of posZ){
-                    let cube=document.createElement("a-entity");
-                    cube.setAttribute("geometry","primitive: box");
-                    cube.setAttribute("position",`${x} ${y} ${z}`);
-                    cube.setAttribute("scale",`${cubeSize} ${cubeSize}} ${cubeSize}`);
-                    
-                    cube.setAttribute("color","#5B67A4");
-                    cube9.appendChild(cube);
-                }
-            }
+    <script>
+    // Cube parameters
+    const positions = [-1, 0, 1];
+    const layersY = [1, 2, 3];
+    const layersZ = [-4, -5, -6];
+    const cubeSize = 0.97;
+    const model = '#cube-model';
+
+    // Slices definitions, with their centers and match functions
+    const sliceDefs = {
+      U:  {center: [0,3,-5],  match: (x,y,z) => y===3, axis: 'y', angle: 90},      // Top row
+      D:  {center: [0,1,-5],  match: (x,y,z) => y===1, axis: 'y', angle: 90},     // Bottom row
+      MX:  {center: [0,2,-5],  match: (x,y,z) => x===0, axis: 'x', angle: 90},      // Top row
+      MY:  {center: [0,2,-5],  match: (x,y,z) => y===2, axis: 'y', angle: 90},     // Bottom row
+      MZ:  {center: [0,2,-5],  match: (x,y,z) => z===-5, axis: 'z', angle: 90},      // Top row
+      L:  {center: [-1,2,-5], match: (x,y,z) => x===-1, axis: 'x', angle: 90},    // Left column
+      R:  {center: [1,2,-5],  match: (x,y,z) => x===1, axis: 'x', angle: 90},      // Right column
+      F:  {center: [0,2,-4],  match: (x,y,z) => z===-4, axis: 'z', angle: 90},     // Front slice
+      B:  {center: [0,2,-6],  match: (x,y,z) => z===-6, axis: 'z', angle: 90},    // Back slice
+
+      UL:  {center: [0,3,-5],  match: (x,y,z) => y===3, axis: 'y', angle: -90},      // Top row
+      DL:  {center: [0,1,-5],  match: (x,y,z) => y===1, axis: 'y', angle: -90},     // Bottom row
+      MXL:  {center: [0,2,-5],  match: (x,y,z) => x===0, axis: 'x', angle: -90},      // Top row
+      MYL:  {center: [0,2,-5],  match: (x,y,z) => y===2, axis: 'y', angle: -90},     // Bottom row
+      MZL:  {center: [0,2,-5],  match: (x,y,z) => z===-5, axis: 'z', angle: -90},      // Top row
+      LL:  {center: [-1,2,-5], match: (x,y,z) => x===-1, axis: 'x', angle: -90},    // Left column
+      RL:  {center: [1,2,-5],  match: (x,y,z) => x===1, axis: 'x', angle: -90},      // Right column
+      FL:  {center: [0,2,-4],  match: (x,y,z) => z===-4, axis: 'z', angle: -90},     // Front slice
+      BL:  {center: [0,2,-6],  match: (x,y,z) => z===-6, axis: 'z', angle: -90},    // Back slice
+    };
+
+    // Create all cubelets under cube-cluster, no duplicates
+    const cluster = document.getElementById('cube-cluster');
+    let cubelets = [];
+    for (let y of layersY) {
+      for (let x of positions) {
+        for (let z of layersZ) {
+          let cubelet = document.createElement('a-entity');
+          cubelet.setAttribute('gltf-model', model);
+          cubelet.setAttribute('position', `${x} ${y} ${z}`);
+          cubelet.setAttribute('scale', `${cubeSize} ${cubeSize} ${cubeSize}`);
+          cubelet.setAttribute('rotation', `0 0 0`);
+          cubelet.setAttribute('data-x', x);
+          cubelet.setAttribute('data-y', y);
+          cubelet.setAttribute('data-z', z);
+          cluster.appendChild(cubelet);
+          cubelets.push(cubelet);
         }
-        function rotate(direction){
-            
+      }
+    }
+
+    // Utility: Convert string rotation to object
+    function parseRotation(rot) {
+      if (typeof rot === 'string') {
+        let arr = rot.trim().split(/\s+/).map(Number);
+        return {x: arr[0]||0, y: arr[1]||0, z: arr[2]||0};
+      }
+      return rot || {x:0, y:0, z:0};
+    }
+
+    // Rotate slice animation
+    function rotateSlice(face) {
+      const sliceDef = sliceDefs[face];
+      if (!sliceDef) return;
+      const {center, match, axis, angle} = sliceDef;
+
+      // Find affected cubelets
+      let affected = cubelets.filter(cubelet => {
+        const x = parseInt(cubelet.getAttribute('data-x'));
+        const y = parseInt(cubelet.getAttribute('data-y'));
+        const z = parseInt(cubelet.getAttribute('data-z'));
+        return match(x,y,z);
+      });
+
+      // For each affected cubelet, animate rotation about the slice center
+      affected.forEach(cubelet => {
+        // Get current position and rotation
+        let pos = cubelet.getAttribute('position');
+        let rot = parseRotation(cubelet.getAttribute('rotation'));
+
+        // Compute position relative to slice center
+        let rel = {
+          x: pos.x - center[0],
+          y: pos.y - center[1],
+          z: pos.z - center[2]
+        };
+
+        // Rotate rel position around axis by angle
+        let rad = angle * Math.PI/180;
+        let newRel = {...rel};
+        if (axis === 'x') {
+          newRel.y = rel.y * Math.cos(rad) - rel.z * Math.sin(rad);
+          newRel.z = rel.y * Math.sin(rad) + rel.z * Math.cos(rad);
+        } else if (axis === 'y') {
+          newRel.x = rel.x * Math.cos(rad) - rel.z * Math.sin(rad);
+          newRel.z = rel.x * Math.sin(rad) + rel.z * Math.cos(rad);
+        } else if (axis === 'z') {
+          newRel.x = rel.x * Math.cos(rad) - rel.y * Math.sin(rad);
+          newRel.y = rel.x * Math.sin(rad) + rel.y * Math.cos(rad);
         }
+
+        // Compute new world position
+        let newPos = {
+          x: center[0] + Math.round(newRel.x),
+          y: center[1] + Math.round(newRel.y),
+          z: center[2] + Math.round(newRel.z)
+        };
+
+        // Animate position
+        cubelet.setAttribute('animation__pos', {
+          property: 'position',
+          to: `${newPos.x} ${newPos.y} ${newPos.z}`,
+          dur: 600,
+          easing: 'easeInOutQuad'
+        });
+
+        // Animate rotation (just axis for visual)
+        let newRot = {...rot};
+        if (axis === 'x') {
+          newRot.x += angle;
+        } else if (axis === 'y') {
+          newRot.y += angle;
+        } else if (axis === 'z') {
+          newRot.z += angle;
+        }
+        cubelet.setAttribute('animation__rot', {
+          property: 'rotation',
+          to: `${newRot.x} ${newRot.y} ${newRot.z}`,
+          dur: 600,
+          easing: 'easeInOutQuad'
+        });
+
+        // Update stored position/rotation after animation completes
+        setTimeout(() => {
+          cubelet.setAttribute('position', `${newPos.x} ${newPos.y} ${newPos.z}`);
+          cubelet.setAttribute('rotation', `${newRot.x} ${newRot.y} ${newRot.z}`);
+          cubelet.setAttribute('data-x', newPos.x);
+          cubelet.setAttribute('data-y', newPos.y);
+          cubelet.setAttribute('data-z', newPos.z);
+          // Remove animation so further clicks work
+          cubelet.removeAttribute('animation__pos');
+          cubelet.removeAttribute('animation__rot');
+        }, 650);
+      });
+    }
+    window.rotateSlice = rotateSlice;
     </script>
-</body>
+  </body>
 </html>

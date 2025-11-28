@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <style>
+      #rubiks-menu {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        z-index: 10;
+        background: rgba(255,255,255,0.85);
+        padding: 12px;
+        border-radius:8px;
+        font-family: sans-serif;
+      }
+      #rubiks-menu button { margin: 2px 4px; padding: 6px 12px; border-radius: 5px; border: none; background: #6a95ff; color: white; font-weight: bold; cursor: pointer;}
+      #rubiks-menu button:hover { background: #4562b5;}
+    </style>
+</head>
+<body>
+    <div id="rubiks-menu">
+      <b>Rotate Slice (grouped, centered):</b><br>
+      <button onclick="rotate('U')">U (Top, y=3)</button>
+      <button onclick="rotate('D')">D (Bottom, y=1)</button>
+      <button onclick="rotate('L')">L (Left, x=-1)</button>
+      <button onclick="rotate('R')">R (Right, x=1)</button>
+      <button onclick="rotate('F')">F (Front, z=-2)</button>
+      <button onclick="rotate('B')">B (Back, z=-4)</button>
+    </div>
+    <a-scene>
+        <a-assets>
+            <a-asset-item id="rcube" src="./assets/rcube.glb"></a-asset-item>
+        
+        </a-assets>
+        <a-sky color="#408D91"></a-sky>
+        <a-entity light="type: directional; intensity:3; color:#fff" position="2 3 -2"></a-entity>
+        <a-entity light="type: directional; intensity:2; color:#fff" position="-2 -3 2"></a-entity>
+        <a-entity id="cube9"></a-entity>
+    </a-scene>
+    <script>
+        //cubelet mapping
+
+        const map={
+            
+      U:  {center: [0,3,-5],  match: (x,y,z) => y===3, axis: 'y', angle: 90},      // Top row
+      D:  {center: [0,1,-5],  match: (x,y,z) => y===1, axis: 'y', angle: 90},     // Bottom row
+      L:  {center: [-1,2,-5], match: (x,y,z) => x===-1, axis: 'x', angle: -90},    // Left column
+      R:  {center: [1,2,-5],  match: (x,y,z) => x===1, axis: 'x', angle: 90},      // Right column
+      F:  {center: [0,2,-4],  match: (x,y,z) => z===-4, axis: 'z', angle: 90},     // Front slice
+      B:  {center: [0,2,-6],  match: (x,y,z) => z===-6, axis: 'z', angle: -90},    // Back slice
+        };
+
+
+
+        //cube constants
+        const posX = [-1, 0, 1];
+        const posY = [1, 2, 3];
+        const posZ = [-4,-5, -6];
+        const cubeSize=0.97;
+        const model='#rcube';
+        let cubes=[];
+        //adding rubik cube in scene
+   
+        const cube9=document.getElementById("cube9");
+        for(let x of posX){
+            for(let y of posY){
+                for(let z of posZ){
+                    let cube=document.createElement("a-entity");
+                    cube.setAttribute("gltf-model",model);
+                    cube.setAttribute("position",` ${x} ${y} ${z}`);
+                    cube.setAttribute("scale",` ${cubeSize} ${cubeSize}} ${cubeSize}`);
+                    cube.setAttribute('rotation', `0 0 0`);
+                    cube.setAttribute('data-x', x);
+                    cube.setAttribute('data-y', y);
+                    cube.setAttribute('data-z', z);
+                    cube9.appendChild(cube);
+                    cubes.push(cube);
+                }
+            }
+        }
+        function findRotation(axis, ){
+
+        }
+        function rotate(direction){
+            let dirMap=map[direction];
+            const {center, match, axis, angle} = dirMap;
+
+            let affected = cubes.filter(cubelet => {
+                const x = parseInt(cubelet.getAttribute('data-x'));
+                const y = parseInt(cubelet.getAttribute('data-y'));
+                const z = parseInt(cubelet.getAttribute('data-z'));
+                return match(x,y,z);
+            });
+        affected.forEach(cube => {
+                
+                cube.setAttribute("rotation","0 90 0")
+            });
+        }
+    </script>
+</body>
+</html>
