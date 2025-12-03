@@ -4,34 +4,33 @@
     <meta charset="utf-8">
     <title>Rubik's Cube Slice Rotation - Single Cubelet Version</title>
     <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
-    <style>
-      #rubiks-menu {
-        position: absolute;
-        top: 20px;
-        left: 20px;
-        z-index: 10;
-        background: rgba(255,255,255,0.85);
-        padding: 12px;
-        border-radius:8px;
-        font-family: sans-serif;
-      }
-      #rubiks-menu button { margin: 2px 4px; padding: 6px 12px; border-radius: 5px; border: none; background: #6a95ff; color: white; font-weight: bold; cursor: pointer;}
-      #rubiks-menu button:hover { background: #4562b5;}
-    </style>
+    <link rel="stylesheet" href="css/style.css">
+    
   </head>
   <body>
     <div id="rubiks-menu">
       <b>Rotate Slice (grouped, centered):</b><br>
-      <button onclick="rotateSlice('UL')"><</button>U (Top, y=3)<button onclick="rotateSlice('U')">></button>
-      <button onclick="rotateSlice('MYL')"><</button> (Middle, y=2)<button onclick="rotateSlice('MY')">></button>
-      <button onclick="rotateSlice('DL')"><</button> (Bottom, y=1)<button onclick="rotateSlice('D')">></button>
-      <button onclick="rotateSlice('LL')"><</button> (Left, x=-1)<button onclick="rotateSlice('L')">></button>
-      <button onclick="rotateSlice('MXL')"><</button> (Middle, x=0)<button onclick="rotateSlice('MX')">></button>
-      <button onclick="rotateSlice('RL')"><</button> (Right, x=1)<button onclick="rotateSlice('R')">></button>
-      <button onclick="rotateSlice('FL')"><</button> (Front, z=-2)<button onclick="rotateSlice('F')">></button>
-      <button onclick="rotateSlice('MZL')"><</button> (Middle, z=-3)<button onclick="rotateSlice('MZ')">></button>
-      <button onclick="rotateSlice('BL')"><</button> (Back, z=-4)<button onclick="rotateSlice('B')">></button>
+      <div id="U">
+      <button onclick="rotateSlice('UL')"><</button>U (Top, y=3)<button onclick="rotateSlice('U')">></button></div>
+       <div id="MY">
+      <button onclick="rotateSlice('MYL')"><</button> (Middle, y=2)<button onclick="rotateSlice('MY')">></button></div>
+       <div id="D">
+      <button onclick="rotateSlice('DL')"><</button> (Bottom, y=1)<button onclick="rotateSlice('D')">></button></div>
+       <div id="L">
+      <button onclick="rotateSlice('LL')"><</button> (Left, x=-1)<button onclick="rotateSlice('L')">></button></div>
+       <div id="MX">
+      <button onclick="rotateSlice('MXL')"><</button> (Middle, x=0)<button onclick="rotateSlice('MX')">></button></div>
+       <div id="R">
+      <button onclick="rotateSlice('RL')"><</button> (Right, x=1)<button onclick="rotateSlice('R')">></button></div>
+       <div id="F">
+      <button onclick="rotateSlice('FL')"><</button> (Front, z=-2)<button onclick="rotateSlice('F')">></button></div>
+       <div id="MZ">
+      <button onclick="rotateSlice('MZL')"><</button> (Middle, z=-3)<button onclick="rotateSlice('MZ')">></button></div>
+       <div id="B">
+      <button onclick="rotateSlice('BL')"><</button> (Back, z=-4)<button onclick="rotateSlice('B')">></button></div>
+      <button onclick="random()">randomize</button>
     </div>
+
     <a-scene>
       <a-assets>
         <a-asset-item id="cube-model" src="./assets/rcube.glb"></a-asset-item>
@@ -47,20 +46,26 @@
       <a-entity light="type: point; intensity:3.6; distance:10" position="-3 2 0"></a-entity>
       <a-entity light="type: point; intensity:3.6; distance:10" position="0 1 -5"></a-entity>
       <a-entity id="cube-cluster"></a-entity>
+     
+     
       <a-entity gltf-model="#building"  scale="200 200 200" position="0 -13 -10" color="#4562b5"></a-entity>
       <a-entity gltf-model="#uc" scale="100 100 100" position="4 10 -10" rotation="90 0 0"></a-entity>
       <a-box color="#abcdf1" position="-4 2 -5" rotation="45 45 45" animation="property: position; to: -4 3 -5; dur: 2000; easing: easeInOutQuad; loop: true; dir: alternate;"></a-box>
       <a-entity gltf-model="#solve_the_cube" scale="30 30 30" rotation="90 0 0" position="0 4.5 -5"></a-entity>
       <a-box color="#abcdf1" position="4 2 -5" rotation="45 45 45" animation="property: position; to: 4 3 -5; dur: 2000; easing: easeInOutQuad; loop: true; dir: alternate;"></a-box>
+     
     </a-scene>
-
+  
     <script>
     // Cube parameters
+    let isRotating = false;
     const positions = [-1, 0, 1];
     const layersY = [1, 2, 3];
     const layersZ = [-4, -5, -6];
     const cubeSize = 0.97;
     const model = '#cube-model';
+
+    faces=['U','UL','L','LL','R','RL','DL','D','B','BL','F','FL','MYL','MY','MZ','MZL','MXL','MX'];
 
     // Slices definitions, with their centers and match functions
     const sliceDefs = {
@@ -96,6 +101,7 @@
           cubelet.setAttribute('position', `${x} ${y} ${z}`);
           cubelet.setAttribute('scale', `${cubeSize} ${cubeSize} ${cubeSize}`);
           cubelet.setAttribute('rotation', `0 0 0`);
+          cubelet.classList.add('cubelet');
           cubelet.setAttribute('data-x', x);
           cubelet.setAttribute('data-y', y);
           cubelet.setAttribute('data-z', z);
@@ -116,10 +122,12 @@
 
     // Rotate slice animation
     function rotateSlice(face) {
+      if(isRotating){return;}
+      isRotating=true;
       const sliceDef = sliceDefs[face];
       if (!sliceDef) return;
       const {center, match, axis, angle} = sliceDef;
-
+      
       // Find affected cubelets
       let affected = cubelets.filter(cubelet => {
         const x = parseInt(cubelet.getAttribute('data-x'));
@@ -196,10 +204,25 @@
           // Remove animation so further clicks work
           cubelet.removeAttribute('animation__pos');
           cubelet.removeAttribute('animation__rot');
+          isRotating=false;
         }, 650);
       });
     }
     window.rotateSlice = rotateSlice;
+    async function random(){
+      let r=0;
+      for(let i=0;i<10;i++){
+        r=Math.floor(Math.random() * 18);
+        console.log(r);
+        console.log(faces[r]);
+        rotateSlice(faces[r]);
+       await sleep(650);
+      }
+    }
+    function sleep(time) {
+  return new Promise((resolve) => setTimeout(resolve, time));
+}
+
     </script>
   </body>
 </html>
