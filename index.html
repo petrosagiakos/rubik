@@ -8,28 +8,66 @@
     
   </head>
   <body>
-    <div id="rubiks-menu">
-      <b>Rotate Slice (grouped, centered):</b><br>
-      <div id="U">
-      <button onclick="rotateSlice('UL')"><</button>U (Top, y=3)<button onclick="rotateSlice('U')">></button></div>
-       <div id="MY">
-      <button onclick="rotateSlice('MYL')"><</button> (Middle, y=2)<button onclick="rotateSlice('MY')">></button></div>
-       <div id="D">
-      <button onclick="rotateSlice('DL')"><</button> (Bottom, y=1)<button onclick="rotateSlice('D')">></button></div>
-       <div id="L">
-      <button onclick="rotateSlice('LL')"><</button> (Left, x=-1)<button onclick="rotateSlice('L')">></button></div>
-       <div id="MX">
-      <button onclick="rotateSlice('MXL')"><</button> (Middle, x=0)<button onclick="rotateSlice('MX')">></button></div>
-       <div id="R">
-      <button onclick="rotateSlice('RL')"><</button> (Right, x=1)<button onclick="rotateSlice('R')">></button></div>
-       <div id="F">
-      <button onclick="rotateSlice('FL')"><</button> (Front, z=-2)<button onclick="rotateSlice('F')">></button></div>
-       <div id="MZ">
-      <button onclick="rotateSlice('MZL')"><</button> (Middle, z=-3)<button onclick="rotateSlice('MZ')">></button></div>
-       <div id="B">
-      <button onclick="rotateSlice('BL')"><</button> (Back, z=-4)<button onclick="rotateSlice('B')">></button></div>
-      <button onclick="random()">randomize</button>
-    </div>
+  <div id="rubiks-menu">
+  <h3>Rubik's Cube Slice Control</h3>
+    <div class="slice-control">
+    <span>Top Layer (Y-axis, y=2):</span>
+    <button onclick="rotateSlice('UL')">&larr;</button>
+    <button onclick="rotateSlice('U')">&rarr;</button>
+  </div>
+  
+  <div class="slice-control">
+    <span>Middle Layer (Y-axis, y=2):</span>
+    <button onclick="rotateSlice('MYL')">&larr;</button>
+    <button onclick="rotateSlice('MY')">&rarr;</button>
+  </div>
+
+  <div class="slice-control">
+    <span>Bottom Layer (D, y=1):</span>
+    <button onclick="rotateSlice('DL')">&larr;</button>
+    <button onclick="rotateSlice('D')">&rarr;</button>
+  </div>
+
+  <div class="slice-control">
+    <span>Left Column (L, x=-1):</span>
+    <button onclick="rotateSlice('LL')">&larr;</button>
+    <button onclick="rotateSlice('L')">&rarr;</button>
+  </div>
+
+  <div class="slice-control">
+    <span>Middle Column (X-axis, x=0):</span>
+    <button onclick="rotateSlice('MXL')">&larr;</button>
+    <button onclick="rotateSlice('MX')">&rarr;</button>
+  </div>
+
+  <div class="slice-control">
+    <span>Right Column (R, x=1):</span>
+    <button onclick="rotateSlice('RL')">&larr;</button>
+    <button onclick="rotateSlice('R')">&rarr;</button>
+  </div>
+
+  <div class="slice-control">
+    <span>Front Layer (F, z=-2):</span>
+    <button onclick="rotateSlice('FL')">&larr;</button>
+    <button onclick="rotateSlice('F')">&rarr;</button>
+  </div>
+
+  <div class="slice-control">
+    <span>Middle Layer (Z-axis, z=-3):</span>
+    <button onclick="rotateSlice('MZL')">&larr;</button>
+    <button onclick="rotateSlice('MZ')">&rarr;</button>
+  </div>
+
+  <div class="slice-control">
+    <span>Back Layer (B, z=-4):</span>
+    <button onclick="rotateSlice('BL')">&larr;</button>
+    <button onclick="rotateSlice('B')">&rarr;</button>
+  </div>
+
+  <div class="slice-control">
+    <button onclick="random()">&#8623 Randomize Cube</button>
+  </div>
+</div>
 
     <a-scene>
       <a-assets>
